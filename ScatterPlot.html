@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Scatter Plot</title>
+  <!-- Styles -->
+  <style type="text/css">
+    .axis text{
+      font-family: 'Poiret One', cursive;
+      font-size: 16pt;
+    }
+
+    .axis .label{
+      font-size: 20pt;
+    }
+
+    .axis path, .axis line{
+      fill: none;
+      stroke: #000;
+      shape-rendering: crispEdges;
+    }
+  </style>
+
+  <!-- JS Libraries -->
+  <script type="text/javascript" src="node_modules/jquery/dist/jquery.min.js"></script>
+  <script type="text/javascript" src="node_modules/d3/build/d3.min.js"></script>
+  <script type="text/javascript" src="node_modules/d3-axis/build/d3-axis.min.js"></script>
+</head>
+<body>
+  <div id="target"></div>
+  <script type="text/javascript">
+    /*
+      Reference at: https://medium.com/@currankelleher/d3-interview-questions-4a097191b8a7#.p2lderakp
+     */
+    var outerWidth = 960;
+    var outerHeigth = 500;
+    var margin = {
+      left: 60, top:5, right:10, bottom: 60
+    };
+
+    var rMin = 2, rMax = 3;
+
+    var xColumn = "sepal_length";
+    var yColumn = "petal_length";
+    var rColumn = "sepal_width";
+    var colorColumn = "species";
+
+    var xAxisLabelText = "Sepal Length (cm)";
+    var xAxisLabelOffset = 48;
+
+    var yAxisLabelText = "Petal Length (cm)";
+    var yAxisLabelOffset = 30;
+
+    var innerWidth = outerWidth - margin.left - margin.right;
+    var innerHeight = outerHeight - margin.top - margin.bottom;
+
+    var svg = d3.select("#target").append("svg")
+                .attr("width", outerWidth)
+                .attr("height", outerHeight);
+
+    var g = svg.append("g")
+               .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    var xAxisG = g.append("g")
+                  .attr("class", "x axis")
+                  .attr("transform", "translate(0," + innerHeight +")");
+
+    var xAxisLabel = xAxisG.append("text")
+                           .style("text-anchor", "middle")
+                           .attr("x", innerWidth/2)
+                           .attr("y", xAxisLabelOffset)
+                           .attr("class", "label")
+                           .text(xAxisLabelText);
+
+    var yAxisG = g.append("g")
+                  .attr("class", "y axis");
+    var yAxisLabel = yAxisG.append("text")
+                           .style("text-anchor", "middle")
+                           .attr("transform", "translate(-" + yAxisLabelOffset + "," + (innerHeight/2) +") rotate(-90)")
+                           .attr("class", "label")
+                           .text(yAxisLabelText);
+
+    var xScale = d3.scaleLinear().range([0, innerWidth]);
+    var yScale = d3.scaleLinear().range([innerHeight, 0]);
+    var rScale = d3.scaleLinear().range([rMin, rMax]);
+    var colorScale = d3.scaleOrdinal()
+                       .range(["#0066FF", "#CC0066", "#33CC33"]);
+
+    var xAxis = d3.svg.axis().scale(xScale).orient("bottom")
+                  .ticks(10)
+                  .tickFormat(d3.format("s"))
+                  .outerTickSize(0);
+
+    var yAxis = d3.svg.axis().scale(yScale).orient("left")
+                  .ticks(5)
+                  .tickFormat(d3.format("s"))
+                  .outerTickSize(0);
+
+
+    function render(data){
+      xScale.domain(d3.extent(data, function(d){return d[xColumn];} ));
+      yScale.domain(d3.extent(data, function(d){return d[yColumn];} ));
+      rScale.domain(d3.extent(data, function(d){return d[rColumn];} ));
+
+      xAxisG.call(xAxis);
+      yAxisG.call(yAxis);
+
+      var circles = g.selectAll("circle").data(data);
+      circles.enter().append("circle");
+      circles.attr("cx", function(d){return xScale(d[xColumn]); })
+             .attr("cy", function(d){return yScale(d[yColumn]); })
+             .attr("r",  function(d){return rScale(d[rColumn]); })
+             .attr("fill", function(d){return colorScale(d[colorColumn]); });
+
+      circles.exit().remove();
+
+    }
+
+    function type(d){
+      d.sepal_length = +d.sepal_length;
+      d.sepal_width = +d.sepal_width;
+      d.petal_length = +d.petal_length;
+      d.petal_width = _d.petal_width;
+      return d;
+    }
+
+    d3.csv("data/iris.csv", type, render);
+</script>
+</body>
+</html>
